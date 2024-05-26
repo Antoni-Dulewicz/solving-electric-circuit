@@ -10,7 +10,7 @@ def graph_test(s,t,L,draw_labels = False):
         (0,2,2),
         (1,3,2)]        
     currents = solver(random_edges,s,t,3)
-    draw_graph(random_edges,s,t,currents,L,draw_labels)
+    #draw_graph(random_edges,s,t,currents,L,draw_labels)
 
 def random_regular_graph_test(v,s,t,L,draw_labels = False):
     random_edges = generating_random_regular_graph(v,0.5)

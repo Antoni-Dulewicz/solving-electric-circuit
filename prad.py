@@ -2,7 +2,7 @@ from copy import deepcopy
 import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
-from graph_generator import generating_random_graph, generating_random_bridge_graph, generating_random_grid_graph
+#from graph_generator import generating_random_graph, generating_random_bridge_graph, generating_random_grid_graph
 from enum import Enum
 
 class Layout(Enum):
@@ -14,7 +14,7 @@ class Layout(Enum):
 
 
 
-# reprezentacja grafu w postaci listy sasiedztwa
+# switching to adjacency list representation
 def switch_to_list_representation(edges):
     graph_dict = {}
 
@@ -35,7 +35,8 @@ def switch_to_list_representation(edges):
             G[s].append(edge)
 
     return G
-# znajduje cykl w grafie
+
+# finding a cycle in a graph
 def find_cycle(graph, start, end):
     visited = [0 for _ in range(len(graph))]
     visited[start] = 1
@@ -53,14 +54,15 @@ def find_cycle(graph, start, end):
                     stack.append((v,path + [v]))
     return None
 
-# sprawdza czy cykl wystapil juz wczesniej
+# checking if the cycle has already occurred
 def is_duplicate(cycle,cycles):
     for c in cycles:
         if set(c) == set(cycle):
             return True
     return False
 
-# znajduje n cykli w grafie
+
+# finding n cycles in graph
 def find_n_cycles(edges,G,n):
     edges_cp = deepcopy(edges)
     graph = deepcopy(G)
@@ -70,22 +72,28 @@ def find_n_cycles(edges,G,n):
     cnt_cycles = 0
 
     for _ in range(n):
+
+        #choosing edge
         #wybieramy krawedz
         for u,v,weight in edges_cp:
 
+            #temporarily remove edge
             #chwilowo ja usuwamy
             graph[u].remove((v,weight))
             graph[v].remove((u,weight))
-
+            
+            # finding a path between two vertices
             # znajdujemy sciezke pomiedzy tymi dwoma wierzcholkami
             cycle = find_cycle(graph,u,v)
 
+            #if the cycle exists and has not been added before, we add it
             #jesli cykl istnieje i nie byl wczesniej dodany to go dodajemy
             if cycle:
                 if not is_duplicate(cycle,cycles):
                     cycles.append(cycle)    
                     cnt_cycles += 1
             
+            #restoring the edge
             #przywracamy krawedz
             graph[u].append((v,weight))
             graph[v].append((u,weight))
@@ -122,6 +130,7 @@ def get_edges(edges,cycle):
 
     return new_edges
 
+#finding the edge to which the voltage is attached
 #znajduje krawedz do ktorej przylozone jest napiecie
 def find_edge_with_voltage(edges,s,t):
     for i in range(len(edges)):
@@ -131,18 +140,23 @@ def find_edge_with_voltage(edges,s,t):
 
 
 def solver(edges,s,t,E):
+    # how many edges
     e = len(edges) # ile krawędzi
     G = switch_to_list_representation(edges)
+    # how many vertices
     v = len(G) # ile wierzcholkow
 
+    # edge to which the voltage is attached
     #krawedz do ktorej przylozone jest napiecie
     edge_with_voltage = find_edge_with_voltage(edges,s,t)
 
 
+    # matrices needed to solve the system of equations
     # macierze potrzebne do rozwiazania ukladu rownan
     A = [[0.0 for _ in range(e)] for _ in range(e)]
     B = [0.0 for _ in range(e)]
 
+    # edges leaving and entering the given vertices - 1 Kirchhoff's law
     # krawedzie wychodzace i wychodzace z danych wierzcholkow - 1 prawo kir.
     for i in range(v-1):
         for j in range(e):
@@ -151,7 +165,7 @@ def solver(edges,s,t,E):
             elif edges[j][1] == i:
                 A[i][j] = 1
     
-
+    # equations from 2 Kirchhoff's law
     # rownania z oczek - 2 prawo kir.
     cycles = find_n_cycles(edges,G,e-v+1)
 
@@ -172,6 +186,7 @@ def solver(edges,s,t,E):
         i += 1
         
 
+    # solving the system of equations
     # rozwiazujemy uklad rownan 
     A_np = np.array(A)
     B_np = np.array(B)
