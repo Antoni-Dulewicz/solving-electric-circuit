@@ -5,6 +5,8 @@ Solving Electric Circuit
 
 This project is a simple implementation of solving electric circuits using Kirchhoff's laws and solving the resulting system of equations. The project is written in Python and uses the numpy library for matrix operations.
 
+Source code is available in the `prad.py` file.
+
 First graph - testing if it works properly:
 ```python
 graph_test(0,3,Layout.SPRING,True)
